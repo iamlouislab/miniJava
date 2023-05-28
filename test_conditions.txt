@@ -1,0 +1,16 @@
+test_conditions {
+	
+	boolean b = true;
+	boolean a = false;
+	
+	if (b == true) {
+		int e = 3;
+		b = !b;
+	}
+	else {
+		int d = 4;
+		if (b == false) {
+			int c = 3;
+		}
+	}
+}

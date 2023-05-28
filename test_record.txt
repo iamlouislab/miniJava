@@ -1,0 +1,30 @@
+test_record {
+	
+	typedef struct Point { 
+	  int x;
+	  int y;
+	} Point;
+	  
+	Point p = {1,2};
+	
+	struct Point2 { 
+	  int x;
+	  int y;
+	} Test = {4,5};
+	
+	typedef enum couleur {ROUGE,VERT,BLEU,BLANC} Couleur;
+	// Couleur r = couleur.ROUGE;
+	
+	typedef struct PointNomi {
+		int x;
+		int y;
+		String nom;
+	} PointNom;
+	
+	Point p2 = {3, 4};
+	Point p1 = {1, 2};
+	
+	PointNom p3 = {1,5,"John"};
+
+	
+}

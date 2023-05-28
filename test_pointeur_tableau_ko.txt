@@ -1,0 +1,19 @@
+test_pointeur_tableau {
+	int v = true;
+	int b = 3; 
+	
+	int *pointerAllocation = &v;
+	int f = *pointerAllocation;
+	*pointerAllocation = 2;
+
+	int arrayAllocation[] = new int[5];	
+	arrayAllocation[3] = 4;
+	int aA = arrayAllocation[2];
+
+	int test = arrayAllocation[3];
+	if ( arrayAllocation[3] < 5 ) {
+		*pointerAllocation = &b;
+	} else {
+		arrayAllocation[2] = 2;
+	}
+}

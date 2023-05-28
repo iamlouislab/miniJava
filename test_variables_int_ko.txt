@@ -1,0 +1,19 @@
+test_variables_int {
+
+	int i = 1;
+	const int j = 2;
+	<int, int> p = < 3, 4>;
+	int k = 3;
+	
+	if ( i < 5 ) {
+		int f = 12;
+	} else {
+		const boolean p2 = false;
+		print p2;
+	}
+	
+	while ( k < true ) {
+		k = k + 1;
+	}
+	
+}

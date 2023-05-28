@@ -1,0 +1,6 @@
+test_paire {
+	
+	int i = 1;
+	
+
+}

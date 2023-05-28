@@ -1,0 +1,10 @@
+test_operations {
+	const int intConst = 3;
+	const boolean constant = false;
+
+	int i = 1;
+	int j = i;
+	int a = i + j;
+	
+	print a;
+}

@@ -1,0 +1,32 @@
+test_operations {
+	const int intConst = 3;
+	const boolean constant = false;
+
+	boolean i = 1;
+	int j = i;
+	boolean a = true;
+	int z = j + i;
+
+	int ee = -j;
+	int c = i * j;
+	int d = i - j;
+	int e = i / j;
+	boolean b = false;
+	
+	boolean lesseq = j <= 12;
+	boolean supeq = j >= 12;
+	boolean less = j < 12;
+	boolean sup = j > 12;
+	boolean eq = j == 12;
+	boolean diff = j != 12;
+
+	boolean ou = a || b;
+	boolean and = a && b;
+	
+	int modulo = d % c;
+	
+	boolean oppo = !b;
+	
+	int g = a ? e : c;
+
+}

@@ -1,0 +1,30 @@
+test_fonctions {
+  
+  int fact( int n ) {
+    if ( n == 0 ) {
+      return 1;
+    } else {
+      return n * (fact (n - 1));
+    }
+  }
+
+  boolean func1(boolean a1, boolean b1) {
+    return a1 == b1;
+  }
+
+  void func2() {
+    print fact( 5 );
+  }
+  
+  boolean a = true;
+  boolean b = false;
+
+  int functionCallParams = func1(a, b);
+  
+  int pgcd(int foo, int bar) {
+    return foo + bar;
+  }
+	
+  // boolean p = pgcd(47,53);
+
+}
