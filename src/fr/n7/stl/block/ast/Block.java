@@ -101,6 +101,7 @@ public class Block {
 	 */
 	public boolean checkType() {
 		for (Instruction instruction : instructions) {
+			Logger.warning("checking type for " + instruction.getClass());
 			if (!instruction.checkType()) {
 				Logger.error("Erreur de typage sur " + instruction);
 				return false;

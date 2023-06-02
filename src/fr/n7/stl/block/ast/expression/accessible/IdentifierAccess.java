@@ -10,8 +10,10 @@ import fr.n7.stl.block.ast.instruction.declaration.ConstantDeclaration;
 import fr.n7.stl.block.ast.instruction.declaration.ParameterDeclaration;
 import fr.n7.stl.block.ast.instruction.declaration.TypeDeclaration;
 import fr.n7.stl.block.ast.instruction.declaration.VariableDeclaration;
+import fr.n7.stl.block.ast.miniJava.ThisAccess;
 import fr.n7.stl.block.ast.scope.Declaration;
 import fr.n7.stl.block.ast.scope.HierarchicalScope;
+import fr.n7.stl.block.ast.scope.SymbolTable;
 import fr.n7.stl.block.ast.type.Type;
 import fr.n7.stl.block.ast.type.declaration.FieldDeclaration;
 import fr.n7.stl.tam.ast.Fragment;
@@ -19,69 +21,106 @@ import fr.n7.stl.tam.ast.TAMFactory;
 import fr.n7.stl.util.Logger;
 
 /**
- * Implementation of the Abstract Syntax Tree node for an identifier access expression (can be a variable,
+ * Implementation of the Abstract Syntax Tree node for an identifier access
+ * expression (can be a variable,
  * a parameter, a constant, a function, ...).
- * Will be connected to an appropriate object after resolving the identifier to know to which kind of element
+ * Will be connected to an appropriate object after resolving the identifier to
+ * know to which kind of element
  * it is associated (variable, parameter, constant, function, ...).
+ * 
  * @author Marc Pantel
- * TODO : Should also hold a function and not only a variable.
+ *         TODO : Should also hold a function and not only a variable.
  */
 public class IdentifierAccess extends AbstractIdentifier implements AccessibleExpression {
-	
+
 	protected AbstractAccess expression;
-	
+
 	/**
 	 * Creates a variable use expression Abstract Syntax Tree node.
+	 * 
 	 * @param _name Name of the used variable.
 	 */
 	public IdentifierAccess(String _name) {
 		super(_name);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	@Override 
+	@Override
 	public String toString() {
 		return this.name;
 	}
-	
-	/* (non-Javadoc)
-	 * @see fr.n7.stl.block.ast.expression.Expression#collect(fr.n7.stl.block.ast.scope.HierarchicalScope)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * fr.n7.stl.block.ast.expression.Expression#collect(fr.n7.stl.block.ast.scope.
+	 * HierarchicalScope)
 	 */
 	@Override
 	public boolean collectAndBackwardResolve(HierarchicalScope<Declaration> _scope) {
-		if (!_scope.knows(this.name)) {
-			return false;
+		if (this.name.equals("this") && SymbolTable.getCurrentClassDeclaration() != null) {
+			this.expression = new ThisAccess(SymbolTable.getCurrentClassDeclaration());
+			return true;
 		}
-		Declaration _declaration = _scope.get(this.name);
-		if (_declaration instanceof VariableDeclaration) {
-			this.expression = new VariableAccess((VariableDeclaration) _declaration);
+		if (((HierarchicalScope<Declaration>) _scope).knows(this.name)) {
+			Declaration _declaration = _scope.get(this.name);
+			if (_declaration instanceof VariableDeclaration) {
+				this.expression = new VariableAccess((VariableDeclaration) _declaration);
+				return true;
+			} else {
+				if (_declaration instanceof ConstantDeclaration) {
+					this.expression = new ConstantAccess((ConstantDeclaration) _declaration);
+					return true;
+				} else if (_declaration instanceof ParameterDeclaration) {
+					this.expression = new ParameterAccess((ParameterDeclaration) _declaration);
+					return true;
+				} else {
+					Logger.error("The declaration for " + this.name + " is of the wrong kind.");
+					return false;
+				}
+			}
+		} else { /* The resolution has been done previously */
+			return true;
 		}
-		if (_declaration instanceof ParameterDeclaration) {
-			this.expression = new ParameterAccess((ParameterDeclaration) _declaration);
-		}
-		return this.fullResolve(_scope);
 	}
-	
-	/* (non-Javadoc)
-	 * @see fr.n7.stl.block.ast.expression.Expression#resolve(fr.n7.stl.block.ast.scope.HierarchicalScope)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * fr.n7.stl.block.ast.expression.Expression#resolve(fr.n7.stl.block.ast.scope.
+	 * HierarchicalScope)
 	 */
 	@Override
 	public boolean fullResolve(HierarchicalScope<Declaration> _scope) {
 		/* This is the full resolve part that complements the backward resolve. */
 		/* If the resolution has not been done by the backward resolve */
-		if  (this.expression == null) {
-			if (((HierarchicalScope<Declaration>)_scope).knows(this.name)) {
-				Declaration _declaration = _scope.get(this.name);
-				/* This kind should have been handled by partial resolve. */
-				if (_declaration instanceof VariableDeclaration) {
-					throw new SemanticsUndefinedException( "Collect and partial resolve have probably not been implemented correctly. The identifier " + this.name + " should have not been resolved previously.");
+		if (this.expression == null) {
+			if (this.name.equals("this")) {
+				if (SymbolTable.getCurrentClassDeclaration() != null) {
+					this.expression = new ThisAccess(SymbolTable.getCurrentClassDeclaration());
+					return true;
 				} else {
-					/* These kinds are handled by full resolve. */
+					Logger.error("The class declaration for " + this.name + " is of the wrong kind.");
+					return false;
+				}
+			}
+			if (((HierarchicalScope<Declaration>) _scope).knows(this.name)) {
+				Declaration _declaration = _scope.get(this.name);
+				if (_declaration instanceof VariableDeclaration) {
+					this.expression = new VariableAccess((VariableDeclaration) _declaration);
+					return true;
+				} else {
 					if (_declaration instanceof ConstantDeclaration) {
-						// TODO : refactor the management of Constants
 						this.expression = new ConstantAccess((ConstantDeclaration) _declaration);
+						return true;
+					} else if (_declaration instanceof ParameterDeclaration) {
+						this.expression = new ParameterAccess((ParameterDeclaration) _declaration);
 						return true;
 					} else {
 						Logger.error("The declaration for " + this.name + " is of the wrong kind.");
@@ -90,14 +129,16 @@ public class IdentifierAccess extends AbstractIdentifier implements AccessibleEx
 				}
 			} else {
 				Logger.error("The identifier " + this.name + " has not been found.");
-				return false;	
+				return false;
 			}
-		} else {  /* The resolution has been done previously */
+		} else {
 			return true;
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see fr.n7.stl.block.ast.Expression#getType()
 	 */
 	@Override
@@ -105,11 +146,15 @@ public class IdentifierAccess extends AbstractIdentifier implements AccessibleEx
 		if (this.expression != null) {
 			return this.expression.getType();
 		} else {
-			throw new SemanticsUndefinedException( "Collect and Resolve have probably not been implemented correctly. The identifier " + this.name + " has not been resolved.");
+			throw new SemanticsUndefinedException(
+					"Collect and Resolve have probably not been implemented correctly. The identifier " + this.name
+							+ " has not been resolved.");
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see fr.n7.stl.block.ast.Expression#getCode(fr.n7.stl.tam.ast.TAMFactory)
 	 */
 	@Override

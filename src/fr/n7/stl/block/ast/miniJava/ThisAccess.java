@@ -1,0 +1,30 @@
+package fr.n7.stl.block.ast.miniJava;
+import fr.n7.stl.block.ast.expression.AbstractAccess;
+import fr.n7.stl.block.ast.scope.Declaration;
+import fr.n7.stl.tam.ast.Fragment;
+import fr.n7.stl.tam.ast.TAMFactory;
+
+public class ThisAccess extends AbstractAccess {
+
+    protected ClassDeclaration declaration;
+
+    public ThisAccess(ClassDeclaration _declaration) {
+        this.declaration = _declaration;
+    }
+
+    @Override
+    protected Declaration getDeclaration() {
+        return this.declaration;
+    }
+
+    public ClassDeclaration getClassDeclaration() {
+        return this.declaration;
+    }
+
+    @Override
+    public Fragment getCode(TAMFactory _factory) {
+        Fragment _result = _factory.createFragment();
+        return _result;
+    }
+
+}
