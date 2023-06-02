@@ -11,21 +11,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
+
 // Elements du métamodèle pour la construction de l'arbre abstrait
 import fr.n7.stl.block.ast.*;
 import fr.n7.stl.block.ast.expression.*;
+import fr.n7.stl.block.ast.miniJava.*;
 import fr.n7.stl.block.ast.expression.accessible.*;
 import fr.n7.stl.block.ast.expression.allocation.*;
 import fr.n7.stl.block.ast.expression.assignable.*;
 import fr.n7.stl.block.ast.expression.value.*;
 import fr.n7.stl.block.ast.instruction.*;
+
+import java.io.PrintStream;
 import fr.n7.stl.block.ast.instruction.declaration.*;
 import fr.n7.stl.block.ast.scope.*;
 import fr.n7.stl.block.ast.type.*;
 import fr.n7.stl.block.ast.type.declaration.*;
+import fr.n7.stl.tam.ast.Fragment;
+import fr.n7.stl.tam.ast.Register;
+import fr.n7.stl.tam.ast.impl.TAMFactoryImpl;
 import fr.n7.stl.util.*;
-import fr.n7.stl.tam.ast.*;
-import fr.n7.stl.tam.ast.impl.*;
+import java.io.FileOutputStream;
 
 /* Variables partagées dans les actions de l'analyseur syntaxique. */
 parser code {:
@@ -55,39 +61,55 @@ init with {:
 scan with {: return lexer.next_token(); :};
 
 /* Terminaux qui seront transmis par l'analyseur lexical. */
-terminal 			UL_Point_Virgule, UL_Virgule, UL_Point, UL_Deux_Points, UL_Point_Interrogation, UL_Point_Exclamation;
-terminal				UL_Egal, UL_Double_Plus, UL_Double_Moins, UL_Double_Plus_Prefixe, UL_Double_Moins_Prefixe;
-terminal 			UL_Plus, UL_Moins, UL_Moins_Unaire, UL_Asterisque, UL_Oblique, UL_Pour_Cent;
-terminal				UL_Esperluette, UL_Double_Barre, UL_Double_Esperluette;
-terminal				UL_Parenthese_Ouvrante, UL_Parenthese_Fermante;
-terminal				UL_Premier, UL_Second;
-terminal				UL_Accolade_Ouvrante, UL_Accolade_Fermante;
-terminal				UL_Crochet_Ouvrant, UL_Crochet_Fermant;
-terminal				UL_Inferieur, UL_Superieur;
-terminal				UL_Inferieur_Egal, UL_Superieur_Egal;
-terminal				UL_Double_Egal, UL_Exclamation_Egal;
-terminal				UL_Si, UL_Sinon, UL_Tant_Que, UL_Nouveau, UL_Afficher, UL_Retour;
-terminal				UL_Definition_Constante, UL_Definition_Type, UL_Enregistrement, UL_Enumeration;
-terminal				UL_Type_Booleen, UL_Type_Caractere, UL_Type_Chaine, UL_Type_Entier, UL_Type_Flottant, UL_Type_Vide;
+/* Partie miniJava */
+terminal			UL_Classe, UL_Herite;
+terminal			UL_Public, UL_Prive, UL_Protege, UL_Definitif, UL_Abstrait, UL_De_Classe;
+terminal			UL_Classe_Principale, UL_Methode_Principale;
+terminal			UL_This, UL_Super;
+/* Partie Block */
+terminal			UL_Point_Virgule, UL_Virgule, UL_Point, UL_Deux_Points, UL_Point_Interrogation, UL_Point_Exclamation;
+terminal			UL_Egal;
+terminal 			UL_Plus, UL_Moins, UL_Asterisque, UL_Oblique, UL_Pour_Cent;
+terminal			UL_Double_Barre, UL_Double_Esperluette;
+terminal			UL_Parenthese_Ouvrante, UL_Parenthese_Fermante;
+terminal			UL_Accolade_Ouvrante, UL_Accolade_Fermante;
+terminal			UL_Crochet_Ouvrant, UL_Crochet_Fermant;
+terminal			UL_Inferieur, UL_Superieur;
+terminal			UL_Inferieur_Egal, UL_Superieur_Egal;
+terminal			UL_Double_Egal, UL_Exclamation_Egal;
+terminal			UL_Si, UL_Sinon, UL_Tant_Que, UL_Nouveau, UL_Afficher, UL_Retour;
+terminal			UL_Type_Booleen, UL_Type_Caractere, UL_Type_Chaine, UL_Type_Entier, UL_Type_Flottant, UL_Type_Vide;
 terminal String		UL_Identificateur, UL_Chaine, UL_Caractere;
 terminal String		UL_Nombre_Entier, UL_Nombre_Flottant, UL_Nul, UL_Vrai, UL_Faux; // Valeur transmise par l'analyseur lexical
 
 /* Non terminaux avec type renvoyé par actions sémantiques (RESULT = ...) */
-non terminal Block						Program;
-non terminal Block						Bloc; 
+non terminal List<Element>				Program;
+/* début modification miniJava */
+non terminal Block						Block; 
+/* fin modification miniJava */
 non terminal List<Instruction>			Instructions; 
-non terminal Instruction					Instruction;
-non terminal Instruction					Declaration;
+non terminal Instruction				Instruction;
+non terminal Instruction				Declaration;
 non terminal List<Expression>			Expressions;
-non terminal List<FieldDeclaration>		Champs;
-non terminal FieldDeclaration			Champ;
-non terminal List<LabelDeclaration>		Etiquettes;
-non terminal LabelDeclaration			Etiquette;
 non terminal List<ParameterDeclaration>	Parameters;
 non terminal Pair<String,PartialType>	Identifiant;
 non terminal Type						Type, Atomique;
-non terminal Expression 					Expression;
+non terminal Expression 				Expression;
 non terminal AssignableExpression		Affectable;
+/* miniJava */
+non terminal List<Element>				Elements;
+non terminal MainDeclaration			Main;
+non terminal ClassDeclaration			Class;
+non terminal							SingleInherits, MultipleInherits;
+non terminal List<ClassElement>			ClassElements;
+non terminal ClassElement 				ClassElement;
+non terminal AttributeDeclaration		Attribute;
+non terminal Signature					Signature;
+non terminal ConstructorDeclaration		Constructor;
+non terminal MethodDeclaration			Method;
+non terminal List<Instance> 			Instances;
+non terminal Instance					Instance;
+non terminal AccessRight				AccessRight;
 
 /* Associativité et Priorité relative des opérateurs (du moins prioritaire au plus prioritaire) */
 /* Opérateur le moins prioritiaire */
@@ -101,91 +123,263 @@ precedence nonassoc UL_Inferieur, UL_Inferieur_Egal, UL_Superieur, UL_Superieur_
 precedence left UL_Plus, UL_Moins;
 precedence left UL_Asterisque, UL_Oblique, UL_Pour_Cent;
 precedence right UL_Nouveau;
-precedence left UL_Premier, UL_Second;
-precedence left UL_Double_Plus_Prefixe, UL_Double_Moins_Prefixe, UL_Moins_Unaire, UL_Esperluette, UL_Point_Exclamation;
-precedence nonassoc UL_Double_Plus, UL_Double_Moins;
+precedence left UL_Point_Exclamation;
 precedence left UL_Point; // , UL_Crochet_Ouvrant, UL_Parenthese_Ouvrante;
 /* Opérateur le plus prioritaire */
 
 /* Règles de grammaire attribuée pour la construction de l'arbre abstrait */
-/* Program et Bloc sont des non terminaux */
+/* Program et Block sont des non terminaux */
 /* UL_Identificateur est un terminal (Unité lexicale) */
-/* bloc est la variable utilisable dans l'action sémantique qui contient la valeur renvoyé par l'analyse du Bloc */
-Program ::= UL_Identificateur:nom Bloc:bloc
-			{: 
-				System.out.println( "Block named : " + nom );
-				System.out.println( bloc ); 
+/* Block est la variable utilisable dans l'action sémantique qui contient la valeur renvoyé par l'analyse du Block */
+/* TODO */
+Program ::= Elements:elements
+			{: 				
+				List<Fragment> codeFragmentList = new ArrayList<>();
+				Fragment allCode = (new TAMFactoryImpl()).createFragment();
+				
 				SymbolTable tds = new SymbolTable();
-				if (bloc.collect(tds)) {
-					System.out.println("Collect succeeded : " + tds);
-					if (bloc.resolve(tds)) {
-						System.out.println("Resolve succeeded.");
-						if (bloc.checkType()) {
-							System.out.println("checkType succeeded.");
-							bloc.allocateMemory(Register.SB,0);
-							System.out.println("allocateMemory succeeded");
-							TAMFactory factory = new TAMFactoryImpl();
-							System.out.println(bloc.getCode(factory));
-							System.out.println("getCode succeeded");
-						} else {
-							System.out.println("checkType failed :" + tds);
-						}
-					} else {
-						System.out.println("Resolve failed : " + tds);
+				for (int i = elements.size() - 1; i >= 0; i--) {
+					Element e = elements.get(i);
+					System.out.println("element: " + e);
+					if (!e.collect(tds)) {
+						System.out.println("Error collect for element: " + e);
+						break;
 					}
-				} else {
-					System.out.println("Collect failed : " + tds);
+					else {
+						System.out.println("collect succeed!");
+						if (!e.resolve(tds)) {
+							System.out.println("Error resolve for element: " + e);
+							break;
+						}
+						else {
+							System.out.println("resolve succeed!");
+						}
+					}
 				}
+
+				for (int i = elements.size() - 1; i >= 0; i--) {
+					Element e = elements.get(i);
+					if (!e.checkType()) {
+						System.out.println("Error checkType for element: " + e);
+						break;
+					}
+					else {
+						System.out.println("checkType succeed!");
+						/* e.allocateMemory(Register.SB, 0); */
+						/* Fragment code = e.getCode(new TAMFactoryImpl()); */
+						/* codeFragmentList.add(code); */
+					}
+				}
+
+				for (int i = codeFragmentList.size() - 1; i >= 0; i--) {
+					allCode.append(codeFragmentList.get(i));
+				}
+
+				File file = new File(parser.name.replaceAll(".txt", "") + ".tam");
+				PrintStream printer = null;
+				try {
+					printer = new PrintStream( new FileOutputStream(file) );
+					printer.println( allCode );
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
 			:}
 		;
 
-Bloc ::= UL_Accolade_Ouvrante Instructions:instructions UL_Accolade_Fermante 
+/* ajout miniJava : classes, interfaces, attributs, méthodes, constructeurs, etc */
+Elements ::= Main:main
+		{:
+			List<Element> elements = new LinkedList<Element>();
+			elements.add(main);
+			RESULT = elements;
+		:}
+		| Class:c Elements:elements
+		{:
+			elements.add(c);
+			RESULT = elements;
+		:}
+		| UL_Abstrait Class:c Elements:elements
+		{:
+			elements.add(c);
+			RESULT = elements;
+		:}
+		;
+		
+Class ::= UL_Classe UL_Identificateur:name 
+		UL_Accolade_Ouvrante ClassElements:classElements UL_Accolade_Fermante
+		{:
+			RESULT = new ClassDeclaration(name, classElements);
+		:}
+		;
+		
+Main ::= UL_Public UL_Classe UL_Classe_Principale
+		UL_Accolade_Ouvrante 
+			UL_Public UL_De_Classe UL_Type_Vide UL_Methode_Principale 
+			UL_Parenthese_Ouvrante Parameters:parameters UL_Parenthese_Fermante Block:block UL_Accolade_Fermante
+		{:
+			RESULT = new MainDeclaration(parameters, block);
+		:}
+		;
+		
+SingleInherits ::=
+		{:
+		:}
+		|
+		UL_Herite Instance:instance
+		{:
+			RESULT = new SingleInheritsDeclaration(instance);
+		:}
+		;
+		
+MultipleInherits ::= 
+		{:
+		:}
+		|
+		UL_Herite Instances:instances
+		{:
+			RESULT = new MultipleInheritsDeclaration(instances);
+		:}
+		;
+
+		
+Instances ::= Instance:instance UL_Virgule Instances:instances
+		{:
+			instances.add(instance);
+			RESULT = instances;
+		:}
+		|
+		Instance:instance
+		{:
+			List<Instance> instances = new LinkedList<>();
+			instances.add(instance);
+			RESULT = instances;
+		:}
+		;
+		
+Instance ::= UL_Identificateur:name
+		{:
+			RESULT = new Instance( name );
+		:}
+		;
+		
+ClassElements ::= /* Lambda */
+		{:
+			List<ClassElement> elements = new LinkedList<ClassElement>();
+			RESULT = elements;
+		:}
+		| AccessRight:accessRight ClassElement:classElement ClassElements:classElements
+		{:
+			classElement.setAccessRight(accessRight);
+			classElements.add(classElement);
+			RESULT = classElements;
+		:}
+		;
+AccessRight ::=
+		UL_Public
+		{:
+			RESULT = AccessRight.Public;
+		:}
+		| UL_Protege
+		{:
+			RESULT = AccessRight.Protected;
+		:}
+		| UL_Prive
+		{:
+			RESULT = AccessRight.Private;
+		:}
+		;
+
+
+ClassElement ::=
+		Attribute:attribute
+		{:
+			RESULT = attribute;
+		:}
+		|
+		Method:method
+		{:
+			RESULT = method;
+		:}
+		|
+		Constructor:constructor
+		{:
+			RESULT = constructor;
+		:}
+		;
+
+Attribute ::=
+		Type:type Identifiant:identifiant UL_Point_Virgule
+		{:
+			RESULT = new AttributeDeclaration(type, identifiant);
+		:}
+		|
+		UL_De_Classe Type:type Identifiant:identifiant UL_Egal Expression:valeur UL_Point_Virgule
+		{:
+			RESULT = new AttributeDeclaration(type, identifiant, valeur, ElementNature.Static);
+		:}
+		|
+		UL_De_Classe UL_Definitif Type:type Identifiant:identifiant UL_Egal Expression:valeur UL_Point_Virgule
+		{:
+			RESULT = new AttributeDeclaration(type, identifiant, valeur, ElementNature.StaticFinal);
+		:}
+		;
+		
+Method ::=
+		Signature:entete Block:corps
+		{:
+			RESULT = new MethodDeclaration(entete, corps, ElementNature.None);
+		:}
+		| 
+		UL_Definitif Signature:entete Block:corps
+		{:
+			RESULT = new MethodDeclaration(entete, corps, ElementNature.Final);
+		:}
+		| 
+		UL_De_Classe Signature:entete Block:corps
+		{:
+			RESULT = new MethodDeclaration(entete, corps, ElementNature.Static);
+		:}
+		| 
+		UL_De_Classe UL_Definitif Signature:entete Block:corps
+		{:
+			RESULT = new MethodDeclaration(entete, corps, ElementNature.StaticFinal);
+		:}
+		| 
+		UL_Abstrait Signature:entete UL_Point_Virgule
+		{:
+			RESULT = new MethodDeclaration(entete, null, ElementNature.Abstract);
+		:}
+		;
+		
+Signature ::=
+		Type:type Identifiant:identifiant UL_Parenthese_Ouvrante Parameters:parametres UL_Parenthese_Fermante
+		{:
+			RESULT = new Signature(type, identifiant, parametres);
+		:}
+		|
+		Type:type Identifiant:identifiant UL_Parenthese_Ouvrante UL_Parenthese_Fermante
+		{:
+			RESULT = new Signature(type, identifiant, null);
+		:}
+		;
+		
+Constructor ::=
+		UL_Identificateur:nom UL_Parenthese_Ouvrante Parameters:parametres UL_Parenthese_Fermante Block:block
+		{:
+			RESULT = new ConstructorDeclaration(nom, parametres, block);
+		:}
+		|
+		UL_Identificateur:nom UL_Parenthese_Ouvrante UL_Parenthese_Fermante Block:block
+		{:
+			RESULT = new ConstructorDeclaration(nom, null, block);
+		:}
+		;
+
+/* fin ajout miniJava */
+Block ::= UL_Accolade_Ouvrante Instructions:instructions UL_Accolade_Fermante 
 			{: 
 				RESULT = new Block( instructions ); 
-			:}
-		;
-		
-Champ ::= Type:type Identifiant:identifiant UL_Point_Virgule 
-			{: 
-				Type _type = identifiant.getRight();
-				if (_type == null) {
-					_type = type;
-				} else {
-					_type = ((PartialType)_type).complete( type );
- 				}
-				RESULT = new FieldDeclaration( identifiant.getLeft(), _type);
-			:}
-		;
-		
-Champs ::= Champs:champs Champ:champ
-			{: 
-				champs.add(champ); 
-				RESULT = champs; 
-			:} 
-		| Champ:champ
-			{: 
-				List<FieldDeclaration> _champs = new LinkedList<FieldDeclaration>(); 
-				_champs.add(champ); 
-				RESULT = _champs; 
-			:}
-		;
-		
-Etiquette ::= UL_Identificateur:nom
-				{: 
-					RESULT = new LabelDeclaration( nom ); 
-				:}
-			;
-		
-Etiquettes ::= Etiquettes:etiquettes UL_Virgule Etiquette:etiquette
-			{: 
-				etiquettes.add(etiquette); 
-				RESULT = etiquettes; 
-			:} 
-		| Etiquette:etiquette
-			{: 
-				List<LabelDeclaration> _etiquettes = new LinkedList<LabelDeclaration>(); 
-				_etiquettes.add(etiquette); 
-				RESULT = _etiquettes; 
 			:}
 		;
 		
@@ -219,53 +413,24 @@ Type ::= Atomique:atomique
 			{: 
 				RESULT = atomique; 
 			:}
-		| UL_Identificateur:nom
+		| Instance:instance
 			{: 
-				RESULT = new NamedType( nom ); 
-			:}
-		| UL_Enregistrement UL_Identificateur:nom UL_Accolade_Ouvrante Champs:champs UL_Accolade_Fermante
-			{: 
-				RESULT = new RecordType( nom, champs ); 
-			:}
-		| UL_Enumeration UL_Identificateur:nom UL_Accolade_Ouvrante Etiquettes:etiquettes UL_Accolade_Fermante
-			{: 
-				RESULT = new EnumerationType( nom, etiquettes ); 
-			:}
-		| UL_Enregistrement UL_Identificateur:nom
-			{: 
-				RESULT = new NamedType( nom ); 
-			:}
-		| UL_Enumeration UL_Identificateur:nom
-			{: 
-				RESULT = new NamedType( nom ); 
-			:}
-				| UL_Inferieur Type:gauche UL_Virgule Type:droit UL_Superieur
-			{:
-				RESULT = new CoupleType( gauche, droit );
+				RESULT = instance; 
 			:}
 		;
 
 Instructions ::= Instructions:instructions Instruction:instruction
-				{:
-					instructions.add( instruction );
-					RESULT = instructions; 
-				:}
-			|
-				{: RESULT = new LinkedList<Instruction>(); :}
-			;
-			
+			{:
+				instructions.add( instruction );
+				RESULT = instructions; 
+			:}
+		|
+			{: RESULT = new LinkedList<Instruction>(); :}
+		;
+
 Identifiant ::= UL_Identificateur:nom
 				{: 
 					RESULT = new Pair<String,PartialType>( nom, null ); 
-				:}
-			| UL_Asterisque Identifiant:identifiant 
-				{:
-					if (identifiant.getRight() == null) {
-						identifiant.setRight( new PartialPointerType() );
-					} else {
-						identifiant.getRight().enrich(new PartialPointerType());
-					}
-					RESULT = identifiant;
 				:}
 			| Identifiant:identifiant UL_Crochet_Ouvrant UL_Crochet_Fermant 
 				{:
@@ -274,10 +439,6 @@ Identifiant ::= UL_Identificateur:nom
 					} else {
 						identifiant.getRight().enrich(new PartialArrayType());
 					}
-					RESULT = identifiant;
-				:}
-			| UL_Parenthese_Ouvrante Identifiant:identifiant UL_Parenthese_Fermante
-				{:
 					RESULT = identifiant;
 				:}
 			;
@@ -317,49 +478,6 @@ Declaration ::= Type:type Identifiant:identifiant UL_Egal Expression:valeur UL_P
  					}
 					RESULT = new VariableDeclaration( identifiant.getLeft(), _type, valeur);
 				:}
-			| Type:type Identifiant:identifiant UL_Parenthese_Ouvrante Parameters:parametres UL_Parenthese_Fermante Bloc:corps
-				{:
-					Type _type = identifiant.getRight();
-					if (_type == null) {
-						_type = type;
-					} else {
-						_type = ((PartialType)_type).complete( type );
- 					}
-					RESULT = new FunctionDeclaration( identifiant.getLeft(), _type, parametres, corps);
- 
-				:}
-			| Type:type Identifiant:identifiant UL_Parenthese_Ouvrante UL_Parenthese_Fermante Bloc:corps
-				{:
-					Type _type = identifiant.getRight();
-					if (_type == null) {
-						_type = type;
-					} else {
-						_type = ((PartialType)_type).complete( type );
- 					}
-					List<ParameterDeclaration> _parametres = new LinkedList<ParameterDeclaration>();
-					RESULT = new FunctionDeclaration( identifiant.getLeft(), _type, _parametres, corps);
- 
-				:}
-			| UL_Definition_Type Type:type Identifiant:identifiant UL_Point_Virgule
-				{:
-					Type _type = identifiant.getRight();
-					if (_type == null) {
-						_type = type;
-					} else {
-						_type = ((PartialType)_type).complete( type );
- 					}
-					RESULT = new TypeDeclaration( identifiant.getLeft(), _type); 
-				:}
-			| UL_Definition_Constante Type:type Identifiant:identifiant UL_Egal Expression:valeur UL_Point_Virgule
-				{: 
-					Type _type = identifiant.getRight();
-					if (_type == null) {
-						_type = type;
-					} else {
-						_type = ((PartialType)_type).complete( type );
- 					}
-					RESULT = new ConstantDeclaration( identifiant.getLeft(), _type, valeur); 
-				:}
 			;
 
 Instruction ::= Declaration:declaration
@@ -370,25 +488,35 @@ Instruction ::= Declaration:declaration
 				{:
 					RESULT = new Assignment( affectable, expression);
 				:}
+			/* début ajout miniJava : appel de méthodes sans retour */
+			| Affectable:affectable UL_Point_Virgule
+				{:
+					/* void method call */
+					Expression callerObject = ((MethodAssignment) affectable).getCallerObject();
+					String name = ((MethodAssignment) affectable).getName();
+					List<Expression> parameters = ((MethodAssignment) affectable).getParameters();
+					RESULT = new VoidMethod(callerObject, name, parameters);
+				:}
+			/* fin ajout miniJava */
 			| UL_Afficher Expression:expression UL_Point_Virgule
 				{:
 					RESULT = new Printer( expression );
 				:}
-			| UL_Si UL_Parenthese_Ouvrante Expression:condition UL_Parenthese_Fermante Bloc:alors UL_Sinon Bloc:sinon
+			| UL_Si UL_Parenthese_Ouvrante Expression:condition UL_Parenthese_Fermante Block:alors UL_Sinon Block:sinon
 				{: 
-					RESULT = new Conditional( condition, alors, sinon); 
+					RESULT = new Conditional( condition, alors, sinon ); 
 				:}
-			| UL_Si UL_Parenthese_Ouvrante Expression:condition UL_Parenthese_Fermante Bloc:alors
+			| UL_Si UL_Parenthese_Ouvrante Expression:condition UL_Parenthese_Fermante Block:alors 
 				{: 
-					RESULT = new Conditional( condition, alors); 
+					RESULT = new Conditional( condition, alors, null); 
 				:}
-			| UL_Tant_Que UL_Parenthese_Ouvrante Expression:condition UL_Parenthese_Fermante Bloc:body
-				{:
-					RESULT = new Repetition( condition, body);
+			| UL_Tant_Que UL_Parenthese_Ouvrante Expression:condition UL_Parenthese_Fermante Block:corps 
+				{: 
+					RESULT = new Repetition( condition, corps); 
 				:}
 			| UL_Retour Expression:expression UL_Point_Virgule
 				{:
-					RESULT = new Return( expression);
+					RESULT = new Return( expression );
 				:}
 			;
 			
@@ -409,10 +537,15 @@ Affectable ::= UL_Identificateur:nom
 				{:
 					RESULT = new VariableAssignment( nom );
 				:}
-			| UL_Asterisque Affectable:pointeur
+			/* début ajout miniJava */
+			| UL_This
 				{:
-					RESULT = new PointerAssignment( pointeur );
+					RESULT = new This();
 				:}
+			| UL_Super
+				{:
+				:}
+			/* fin ajout miniJava */
 			| Affectable:tableau UL_Crochet_Ouvrant Expression:indice UL_Crochet_Fermant
 				{:
 					RESULT = new ArrayAssignment( tableau, indice);
@@ -433,9 +566,17 @@ Affectable ::= UL_Identificateur:nom
 				{:
 					RESULT = new FieldAssignment( enregistrement, etiquette);
 				:}
+			/* ajout miniJava : appels de méthode */
+			| Affectable:affectable UL_Parenthese_Ouvrante UL_Parenthese_Fermante
+				{:
+				:}
+			| Affectable:affectable UL_Parenthese_Ouvrante Expressions:parametres UL_Parenthese_Fermante
+				{:
+				:}
+			/* ajout miniJava */
 			;
 			            
-Expression ::= /* Affectable:affectable UL_Egal Expression:expression 
+Expression ::= /* TODO (modifications à faire pour 2022) : Affectable:affectable UL_Egal Expression:expression 
 				{:
 					RESULT = new Assignment( affectable, expression);
 				:}
@@ -493,28 +634,12 @@ Expression ::= /* Affectable:affectable UL_Egal Expression:expression
 				:}
             | UL_Moins Expression:expression                 
              	{: 
-					RESULT = new UnaryExpression( UnaryOperator.Opposite, expression); 
+					RESULT = new UnaryExpression( UnaryOperator.Opposite, expression);
 				:} 	
             | UL_Point_Exclamation Expression:expression                 
              	{: 
 					RESULT = new UnaryExpression( UnaryOperator.Negate, expression); 
-				:} 	
-            | UL_Esperluette Affectable:affectable                 
-             	{: 
-					RESULT = new AddressAccess( affectable ); 
-				:} 	
-			| UL_Asterisque Expression:expression                 
-             	{: 
-					RESULT = new PointerAccess( expression ); 
-				:} 	
-			| UL_Premier Expression:expression                 
-             	{: 
-					RESULT = new First( expression ); 
-				:} 	
-			| UL_Second Expression:expression                 
-             	{: 
-					RESULT = new Second( expression ); 
-				:} 	
+				:}
 			| Expression:expression UL_Crochet_Ouvrant Expression:indice UL_Crochet_Fermant
 				{:
 					RESULT = new ArrayAccess( expression, indice );
@@ -539,32 +664,30 @@ Expression ::= /* Affectable:affectable UL_Egal Expression:expression
              	{: 
 					RESULT = new AccessibleConversion( expression, type); 
 				:}
-			| UL_Accolade_Ouvrante Expressions:expressions UL_Accolade_Fermante	         
-             	{: 
-					RESULT = new Sequence( expressions ); 
-				:}
-			| UL_Inferieur Expression:premier UL_Virgule Expression:second UL_Superieur	         
-             	{: 
-					RESULT = new Couple( premier, second ); 
-				:}
 			| UL_Identificateur:nom	                     
              	{: 
 					RESULT = new IdentifierAccess( nom ); 
 				:}
-			| // TODO : Should accept an expression as function
-				UL_Identificateur:nom	UL_Parenthese_Ouvrante Expressions:parametres UL_Parenthese_Fermante                     
+			| /* début adaptation miniJava */
+				Expression:fonction	UL_Parenthese_Ouvrante Expressions:parametres UL_Parenthese_Fermante                     
              	{: 
-					RESULT = new FunctionCall( nom, parametres ); 
+					/* to handle */
+					Expression record = ((AbstractField) fonction).getRecord();
+					String name = ((AbstractField) fonction).getName();
+					RESULT = new MethodAccess(record, name, parametres);
 				:}
-			| // TODO : Should accept an expression as function
-				UL_Identificateur:nom	UL_Parenthese_Ouvrante UL_Parenthese_Fermante                     
+			|
+				Expression:fonction	UL_Parenthese_Ouvrante UL_Parenthese_Fermante                     
              	{:
-					List<Expression> _parametres = new LinkedList<Expression>();
-					RESULT = new FunctionCall( nom, _parametres ); 
+					/* to handle */
+					Expression record = ((AbstractField) fonction).getRecord();
+					String name = ((AbstractField) fonction).getName();
+					RESULT = new MethodAccess(record, name, null); 
 				:}
+				/* fin adaptation miniJava */
 			| UL_Nombre_Entier:entier	                     
              	{: 
-					RESULT = new IntegerValue( entier ); 
+					RESULT = new IntegerValue( entier );
 				:}
 			| UL_Vrai                     
              	{: 
@@ -572,8 +695,18 @@ Expression ::= /* Affectable:affectable UL_Egal Expression:expression
 				:}
 			| UL_Faux                     
              	{: 
-					RESULT = BooleanValue.False; 
+					RESULT = BooleanValue.False;
 				:}
+			/* début ajout miniJava */
+			| UL_This
+				{:
+					RESULT = new IdentifierAccess( "this" ); 
+				:}
+			/* pas d'heritage en miniJava */
+			| UL_Super
+				{:
+				:}
+			/* fin ajout miniJava */
 			| UL_Nul	                     
              	{: 
 					RESULT = NullValue.Null; 
@@ -584,7 +717,7 @@ Expression ::= /* Affectable:affectable UL_Egal Expression:expression
 				:}
 			| UL_Caractere:caractere	                     
              	{: 
-					RESULT = new CharacterValue( caractere ); 
+					RESULT = new CharacterValue( caractere );
 				:}
 			| UL_Chaine:chaine	                     
              	{: 
@@ -594,9 +727,16 @@ Expression ::= /* Affectable:affectable UL_Egal Expression:expression
              	{: 
 					RESULT = new ArrayAllocation( type, taille ); 
 				:}
+			/* début adaptation miniJava : constructeur sans paramètre */
 			| UL_Nouveau Type:type UL_Parenthese_Ouvrante UL_Parenthese_Fermante	                     
              	{: 
-					RESULT = new PointerAllocation( type ); 
+					RESULT = new ConstructorCall( type, null );
 				:}
+			/* fin adaptation miniJava */
+			/* début ajout miniJava : constructeur avec paramètres */
+			| UL_Nouveau Type:type UL_Parenthese_Ouvrante Expressions:parametres UL_Parenthese_Fermante	                     
+             	{: 
+					RESULT = new ConstructorCall( type, parametres );
+				:}
+			/* fin ajout miniJava */
             ;
-       
