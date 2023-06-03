@@ -142,14 +142,12 @@ Program ::= Elements:elements
 					Element e = elements.get(i);
 					System.out.println("element: " + e);
 					if (!e.collect(tds)) {
-						System.out.println("Error collect for element: " + e);
-						break;
+						throw new RuntimeException("Error collect for element: " + e);
 					}
 					else {
 						System.out.println("collect succeed!");
 						if (!e.resolve(tds)) {
-							System.out.println("Error resolve for element: " + e);
-							break;
+							throw new RuntimeException("Error resolve for element: " + e);
 						}
 						else {
 							System.out.println("resolve succeed!");
@@ -160,8 +158,7 @@ Program ::= Elements:elements
 				for (int i = elements.size() - 1; i >= 0; i--) {
 					Element e = elements.get(i);
 					if (!e.checkType()) {
-						System.out.println("Error checkType for element: " + e);
-						break;
+						throw new RuntimeException("Error checkType for element: " + e);
 					}
 					else {
 						System.out.println("checkType succeed!");
@@ -700,7 +697,7 @@ Expression ::= /* TODO (modifications à faire pour 2022) : Affectable:affectabl
 			/* début ajout miniJava */
 			| UL_This
 				{:
-					RESULT = new IdentifierAccess( "this" ); 
+					RESULT = new IdentifierAccess( "this" );
 				:}
 			/* pas d'heritage en miniJava */
 			| UL_Super
