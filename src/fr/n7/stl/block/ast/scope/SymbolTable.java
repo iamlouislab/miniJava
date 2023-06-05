@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import fr.n7.stl.block.ast.miniJava.ClassDeclaration;
+import fr.n7.stl.block.ast.miniJava.MainDeclaration;
 import fr.n7.stl.block.ast.miniJava.MethodDeclaration;
 
 /**
@@ -26,6 +27,15 @@ public class SymbolTable implements HierarchicalScope<Declaration> {
 
 	private static ClassDeclaration currentClassDeclaration;
 	private static MethodDeclaration currentMethodDeclaration;
+	private static MainDeclaration currentMainDeclaration;
+
+	public static MainDeclaration getCurrentMainDeclaration() {
+		return currentMainDeclaration;
+	}
+
+	public static void setCurrentMainDeclaration(MainDeclaration _currentMainDeclaration) {
+		currentMainDeclaration = _currentMainDeclaration;
+	}
 
 	public static MethodDeclaration getCurrentMethodDeclaration() {
 		return currentMethodDeclaration;
