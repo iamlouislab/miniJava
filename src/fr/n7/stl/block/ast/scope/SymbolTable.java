@@ -168,4 +168,11 @@ public class SymbolTable implements HierarchicalScope<Declaration> {
 		return _local;
 	}
 
+
+	public void displayEntries() {
+		for (Entry<String, Declaration> _entry : this.declarations.entrySet()) {
+			System.out.println(_entry.getKey() + " -> " + _entry.getValue().toString());
+		}
+	}
+
 }

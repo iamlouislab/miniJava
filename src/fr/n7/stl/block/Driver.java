@@ -4,7 +4,7 @@ class Driver {
 	public static void main(String[] args) throws Exception {
 		Parser parser = null;
 		if (args.length == 0) {
-			parser = new Parser( "tests/test3.java" );
+			parser = new Parser( "tests/test_constructeur_ko.java" );
 			parser.parse();
 		} else {
 			for (String name : args) {

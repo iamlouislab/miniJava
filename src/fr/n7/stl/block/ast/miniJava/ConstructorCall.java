@@ -135,7 +135,6 @@ public class ConstructorCall implements Expression {
                 paramsString += "_" + parameterDeclaration.getType().toString();
             }
         }
-
         ret.add(_factory.createLoadL(1));
         if (this.parameters != null) {
             for (Expression _parameter : this.parameters) {
@@ -143,7 +142,6 @@ public class ConstructorCall implements Expression {
             }
         }
         ret.add(_factory.createCall("BEGIN:" + name + paramsString, Register.SB));
-
         return ret;
     }
 

@@ -108,7 +108,7 @@ public class MethodDeclaration implements ClassElement {
 
     @Override
     public Fragment getCode(TAMFactory _factory) {
-        Fragment _result = _factory.createFragment();
+        Fragment ret = _factory.createFragment();
         Logger.warning("method: " + signature);
         Logger.warning("corps: " + corps);
         String paramsString = "_method";
@@ -119,13 +119,13 @@ public class MethodDeclaration implements ClassElement {
         }
         Fragment codeCorps = this.corps.getCode(_factory);
         Logger.warning("code: " + codeCorps);
-        _result.append(codeCorps);
-        _result.addPrefix("BEGIN:" + this.signature.getName() + paramsString);
+        ret.append(codeCorps);
+        ret.addPrefix("BEGIN:" + this.signature.getName() + paramsString);
         if (this.signature.getType() == AtomicType.VoidType) {
-            _result.add(_factory.createReturn(0, this.offset));
+            ret.add(_factory.createReturn(0, this.offset));
         }
-        _result.addSuffix("END:" + this.signature.getName() + paramsString);
-        return _result;
+        ret.addSuffix("END:" + this.signature.getName() + paramsString);
+        return ret;
     }
 
     @Override
