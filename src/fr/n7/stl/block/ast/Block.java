@@ -140,7 +140,6 @@ public class Block {
 		for (Instruction instruction : instructions) {
 			ret.append(instruction.getCode(_factory));
 		}
-		ret.add(_factory.createHalt());
 		return ret;
 	}
 
