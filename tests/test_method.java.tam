@@ -3,11 +3,7 @@ LOADL 1
 CALL (SB) BEGIN:A_constructor
 PUSH 1
 STORE (1) 0[SB]
-LOADL 1
-LOADL 1
-CALL (SB) BEGIN:A_constructor_boolean
-PUSH 1
-STORE (1) 1[SB]
+LOADL 3
 HALT
 END:MAIN
 BEGIN:Aint_constructor_int

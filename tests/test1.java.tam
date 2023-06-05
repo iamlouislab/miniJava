@@ -1,0 +1,40 @@
+BEGIN:MAIN
+LOADL 10
+PUSH 1
+STORE (1) 0[SB]
+LOAD (1) 0[SB]
+LOADI (1)
+LOADL 0
+SUBR IGeq
+condition_3
+JUMPIF (0) condition_then_1
+JUMP condition_end_2
+condition_then_1
+LOAD (1) 0[SB]
+LOADI (1)
+LOADL 5
+SUBR IGtr
+JUMPIF (0) condition_then_4
+condition_else_4
+LOAD (1) 0[SB]
+LOADI (1)
+SUBR INeg
+SUBR IOut
+HALT
+JUMP condition_end_4
+condition_then_4
+LOAD (1) 0[SB]
+SUBR IOut
+HALT
+condition_end_4
+LOAD (1) 0[SB]
+LOADI (1)
+LOADL 1
+SUBR ISub
+HALT
+condition_end_2
+JUMP condition_3
+HALT
+HALT
+END:MAIN
+

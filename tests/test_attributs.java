@@ -1,5 +1,5 @@
 class A {
-	private int v;
+	public int v;
 	
 	public void setV(int _v) {
 		this.v = _v;
@@ -23,7 +23,7 @@ public class Main {
 
 	public static void main(String args[]) {
 		A a1 = new A();
-        A a2 = new A( 5 );
+        A a2 = new A( true );
 		print a1.v;
     }
 }
