@@ -9,6 +9,7 @@ import fr.n7.stl.block.ast.scope.Declaration;
 import fr.n7.stl.block.ast.scope.HierarchicalScope;
 import fr.n7.stl.block.ast.type.Type;
 import fr.n7.stl.tam.ast.Fragment;
+import fr.n7.stl.tam.ast.Register;
 import fr.n7.stl.tam.ast.TAMFactory;
 import fr.n7.stl.util.Logger;
 
@@ -18,7 +19,7 @@ public class ConstructorCall implements Expression {
 
     protected List<Expression> parameters;
 
-    public ConstructorCall (Type _element, List<Expression> _parametres) {
+    public ConstructorCall(Type _element, List<Expression> _parametres) {
         this.element = _element;
         this.parameters = _parametres;
     }
@@ -126,7 +127,24 @@ public class ConstructorCall implements Expression {
 
     @Override
     public Fragment getCode(TAMFactory _factory) {
-        throw new SemanticsUndefinedException("Semantics getCode is undefined in ConstructorCall.");
+        Fragment ret = _factory.createFragment();
+        String name = this.element.toString();
+        String paramsString = "_constructor";
+        if (this.parameters != null) {
+            for (Expression parameterDeclaration : this.parameters) {
+                paramsString += "_" + parameterDeclaration.getType().toString();
+            }
+        }
+
+        ret.add(_factory.createLoadL(1));
+        if (this.parameters != null) {
+            for (Expression _parameter : this.parameters) {
+                ret.append(_parameter.getCode(_factory));
+            }
+        }
+        ret.add(_factory.createCall("BEGIN:" + name + paramsString, Register.SB));
+
+        return ret;
     }
 
 }

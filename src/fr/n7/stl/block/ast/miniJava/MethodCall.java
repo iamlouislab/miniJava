@@ -193,11 +193,17 @@ public class MethodCall implements Instruction {
 
     @Override
     public Fragment getCode(TAMFactory _factory) {
-        Fragment _result = _factory.createFragment();
+        Fragment ret = _factory.createFragment();
         for (Expression e : this.parameters) {
-            _result.append(e.getCode(_factory));
+            ret.append(e.getCode(_factory));
         }
-        _result.add(_factory.createCall("begin:" + this.name, Register.SB));
-        return _result;
+        String stringParams = "_method";
+        if (this.parameters != null) {
+            for (Expression p : this.parameters) {
+                stringParams += "_" + p.getType().toString();
+            }
+        }
+        ret.add(_factory.createCall("BEGIN:" + this.name + stringParams, Register.SB));
+        return ret;
     }
 }

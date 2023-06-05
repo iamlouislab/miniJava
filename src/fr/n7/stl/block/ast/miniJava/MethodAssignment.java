@@ -21,6 +21,7 @@ public class MethodAssignment implements AssignableExpression {
     protected MethodDeclaration method;
 
     public MethodAssignment(Expression _callerObject, String _name, List<Expression> _parameters) {
+        Logger.warning("MethodAssignment called with " + _callerObject + " " + _name + " " + _parameters);
         this.callerObject = _callerObject;
         this.name = _name;
         this.parameters = _parameters;

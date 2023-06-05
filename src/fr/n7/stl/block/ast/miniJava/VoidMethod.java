@@ -37,17 +37,17 @@ public class VoidMethod implements Instruction {
 
     @Override
     public String toString() {
-        String _result = this.callerObject + "(";
+        String ret = this.callerObject + "(";
         if (parameters != null) {
             Iterator<Expression> _iter = this.parameters.iterator();
             if (_iter.hasNext()) {
-                _result += _iter.next();
+                ret += _iter.next();
                 while (_iter.hasNext()) {
-                    _result += " ," + _iter.next();
+                    ret += " ," + _iter.next();
                 }
             }
         }
-        return _result + ")";
+        return ret + ")";
 
     }
 
@@ -65,13 +65,16 @@ public class VoidMethod implements Instruction {
 
     @Override
     public boolean collectAndBackwardResolve(HierarchicalScope<Declaration> _scope) {
-        boolean _result = true;
+        boolean ret = true;
         String id = name;
         if (this.parameters != null) {
             for (Expression p : this.parameters) {
                 id += p.getType().toString();
             }
         }
+        Logger.warning("current scope : " + _scope);
+        Logger.warning("current callerObject :" + this.callerObject + "end");
+        Logger.warning("current name :" + this.callerObject.toString() + "end");
         if (((HierarchicalScope<Declaration>) _scope).knows(this.callerObject.toString())) {
             Declaration _declaration = _scope.get(this.callerObject.toString());
             if (_declaration instanceof VariableDeclaration) {
@@ -92,15 +95,14 @@ public class VoidMethod implements Instruction {
                                     this.method = m;
                                     if (this.parameters != null) {
                                         for (Expression exp : this.parameters) {
-                                            _result = _result && exp.collectAndBackwardResolve(_scope);
+                                            ret = ret && exp.collectAndBackwardResolve(_scope);
                                         }
                                     }
-                                    _result = _result && !m.getType().equals(AtomicType.VoidType);
                                 }
                             }
                         }
                         if (found) {
-                            return _result;
+                            return ret;
                         } else {
                             Logger.error("No method of the class " + ((ClassDeclaration) d).getName()
                                     + " with such parameters was found !");
@@ -126,13 +128,14 @@ public class VoidMethod implements Instruction {
 
     @Override
     public boolean fullResolve(HierarchicalScope<Declaration> _scope) {
-        boolean _result = true;
+        boolean ret = true;
         String id = name;
         if (this.parameters != null) {
             for (Expression p : this.parameters) {
                 id += p.getType().toString();
             }
         }
+        Logger.warning("current scope: " + _scope);
         if (((HierarchicalScope<Declaration>) _scope).knows(this.callerObject.toString())) {
             Declaration _declaration = _scope.get(this.callerObject.toString());
             if (_declaration instanceof VariableDeclaration) {
@@ -152,14 +155,14 @@ public class VoidMethod implements Instruction {
                                     found = true;
                                     if (this.parameters != null) {
                                         for (Expression exp : this.parameters) {
-                                            _result = _result && exp.fullResolve(_scope);
+                                            ret = ret && exp.fullResolve(_scope);
                                         }
                                     }
                                 }
                             }
                         }
                         if (found) {
-                            return _result;
+                            return ret;
                         } else {
                             Logger.error("No method of the class " + ((ClassDeclaration) d).getName()
                                     + " with such parameters was found !");

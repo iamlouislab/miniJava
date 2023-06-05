@@ -56,10 +56,11 @@ public class ConstructorDeclaration implements ClassElement {
             }
         }
         if (!(this.identifiant.equals(this.getName()))) {
-            Logger.error("The constructor identifier " + this.identifiant + " is not the same as the class identifier.");
+            Logger.error(
+                    "The constructor identifier " + this.identifiant + " is not the same as the class identifier.");
             return false;
         }
-        
+
         if (((HierarchicalScope<Declaration>) _scope).accepts(this)) {
             _scope.register(this);
             SymbolTable tableParametres = new SymbolTable(_scope);
@@ -84,14 +85,14 @@ public class ConstructorDeclaration implements ClassElement {
     @Override
     public boolean checkType() {
         if (this.parameters != null) {
-            for(ParameterDeclaration parameterDeclaration : this.parameters) {
+            for (ParameterDeclaration parameterDeclaration : this.parameters) {
                 if (parameterDeclaration.getType().equalsTo(AtomicType.ErrorType)) {
                     Logger.error(parameterDeclaration + " is not compatible with parameters type.");
                     return false;
                 }
             }
         }
-		return corps.checkType();
+        return corps.checkType();
     }
 
     @Override
@@ -102,7 +103,18 @@ public class ConstructorDeclaration implements ClassElement {
 
     @Override
     public Fragment getCode(TAMFactory _factory) {
-        throw new UnsupportedOperationException("ConstructorDeclaration getCode is not implemented.");
+        Fragment _result = _factory.createFragment();
+        _result.append(this.corps.getCode(_factory));
+        String paramsString = "_constructor";
+        if (this.parameters != null) {
+            for (ParameterDeclaration parameterDeclaration : this.parameters) {
+                paramsString += "_" + parameterDeclaration.getType().toString();
+            }
+        }
+        _result.addPrefix("BEGIN:" + this.identifiant + paramsString);
+        _result.addSuffix("END:" + this.identifiant + paramsString);
+        _result.add(_factory.createReturn(0, this.offset));
+        return _result;
     }
 
     @Override
@@ -117,7 +129,7 @@ public class ConstructorDeclaration implements ClassElement {
 
     @Override
     public void setAccessRight(AccessRight _accessRight) {
-    	this.accessRight = _accessRight;
+        this.accessRight = _accessRight;
     }
 
 }

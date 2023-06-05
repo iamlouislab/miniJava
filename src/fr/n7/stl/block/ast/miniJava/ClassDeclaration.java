@@ -80,13 +80,19 @@ public class ClassDeclaration implements Element, Declaration {
     @Override
     public int allocateMemory(Register _register, int _offset) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'allocateMemory'");
+        return 0;
     }
 
     @Override
     public Fragment getCode(TAMFactory _factory) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getCode'");
+        Fragment ret = _factory.createFragment();
+        for (ClassElement e : this.classElements) {
+            ret.append(e.getCode(_factory));
+        }
+        ret.addPrefix("BEGIN:" + this.name);
+        ret.addSuffix("END:" + this.name);
+        return ret;
     }
 
     public List<ClassElement> getClassElements() {

@@ -6,6 +6,7 @@ import fr.n7.stl.block.ast.scope.Declaration;
 import fr.n7.stl.block.ast.scope.HierarchicalScope;
 import fr.n7.stl.block.ast.scope.SymbolTable;
 import fr.n7.stl.block.ast.type.AtomicType;
+import fr.n7.stl.block.ast.type.Type;
 import fr.n7.stl.tam.ast.Fragment;
 import fr.n7.stl.tam.ast.Register;
 import fr.n7.stl.tam.ast.TAMFactory;
@@ -15,11 +16,11 @@ import java.util.List;
 
 import java.util.Iterator;
 
-public class MainDeclaration implements Element {
+public class MainDeclaration implements Element, Declaration {
 
     protected List<ParameterDeclaration> parameters;
-
     protected Block block;
+    protected HierarchicalScope<Declaration> _localScope;
 
     /**
      * Constructor for a MainDeclaration
@@ -49,21 +50,26 @@ public class MainDeclaration implements Element {
 
     @Override
     public boolean collect(HierarchicalScope<Declaration> _scope) {
-        SymbolTable.setCurrentClassDeclaration(null);
+        if (SymbolTable.getCurrentMainDeclaration() != null && SymbolTable.getCurrentMainDeclaration() != this) {
+            Logger.error("There is already a main declaration.");
+            return false;
+        }
+        SymbolTable.setCurrentMainDeclaration(this);
+        _localScope = new SymbolTable(_scope);
         for (ParameterDeclaration d : this.parameters) {
             _scope.register(d);
         }
-        return this.block.collect(_scope);
+        return this.block.collect(_localScope);
     }
 
     @Override
     public boolean resolve(HierarchicalScope<Declaration> _scope) {
-        return this.block.resolve(_scope);
+        return this.block.resolve(_localScope);
     }
 
     @Override
     public boolean checkType() {
-        SymbolTable.setCurrentClassDeclaration(null);
+        SymbolTable.setCurrentMainDeclaration(this);
         if (this.parameters != null) {
             for (ParameterDeclaration parameterDeclaration : this.parameters) {
                 if (parameterDeclaration.getType().equalsTo(AtomicType.ErrorType)) {
@@ -84,8 +90,23 @@ public class MainDeclaration implements Element {
 
     @Override
     public Fragment getCode(TAMFactory _factory) {
-        Fragment _result = _factory.createFragment();
-        throw new RuntimeException("MainDeclaration getCode not implemented");
+        Fragment ret = _factory.createFragment();
+        ret.append(this.block.getCode(_factory));
+        ret.addPrefix("BEGIN:MAIN");
+        ret.add(_factory.createHalt());
+        ret.addSuffix("END:MAIN");
+        return ret;
+
+    }
+
+    @Override
+    public String getName() {
+        return "main";
+    }
+
+    @Override
+    public Type getType() {
+        return AtomicType.VoidType;
     }
 
 }
