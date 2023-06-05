@@ -1,0 +1,32 @@
+BEGIN:MAIN
+LOADL 1
+CALL (SB) BEGIN:A_constructor
+PUSH 1
+STORE (1) 0[SB]
+LOADL 1
+LOADL 1
+CALL (SB) BEGIN:A_constructor_boolean
+PUSH 1
+STORE (1) 1[SB]
+HALT
+END:MAIN
+BEGIN:Aint_constructor_int
+BEGIN:A
+LOAD (1) -1[SB]
+END:Aint_constructor_int
+RETURN (0) 0
+BEGIN:A_constructor
+LOADL 1
+SUBR INeg
+END:A_constructor
+RETURN (0) 0
+BEGIN:getV_method
+LOAD (1) 0[LB]
+LOADI (1)
+END:getV_method
+BEGIN:setVint_method_int
+LOAD (1) -1[SB]
+RETURN (0) 0
+END:setVint_method_int
+END:A
+
