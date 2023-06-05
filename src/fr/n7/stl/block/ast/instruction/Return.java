@@ -105,7 +105,19 @@ public class Return implements Instruction {
 	 */
 	@Override
 	public Fragment getCode(TAMFactory _factory) {
-		return this.value.getCode(_factory);
+		Logger.warning("Return getCode with value: " + value);
+		Fragment ret = _factory.createFragment();
+
+		if (this.value.toString().startsWith("this")) {
+			ret.add(_factory.createLoad(Register.LB, 0, 1));
+			ret.add(_factory.createLoadI(1));
+		} else if (this.value.getType() != AtomicType.ErrorType) {
+			ret.add(_factory.createReturn(this.value.getType().length(), this.value.getType().length()));
+		} else {
+			Logger.warning("nothing");
+		}
+		Logger.warning("Return getCode with value: " + value + " and ret: " + ret);
+		return ret;
 	}
 
 }
